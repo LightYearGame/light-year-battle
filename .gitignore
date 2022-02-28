@@ -1,0 +1,14 @@
+
+#Directories
+.idea
+node_modules
+build
+temp
+contracts/test
+
+#Files
+package-lock.json
+*.json
+contracts/Registry.sol
+
+*.swp
