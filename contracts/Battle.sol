@@ -177,6 +177,9 @@ contract Battle is IBattle {
         //battle info bytes array
         bytes memory battleInfoBytes = new bytes(1 + round * 6);
 
+        uint32 attackerHealth = 0;
+        uint32 defenderHealth = 0;
+
         //battle range
         for (uint i = 0; i < round; i++) {
             bytes memory roundBytes;
@@ -193,13 +196,15 @@ contract Battle is IBattle {
             }
 
             //round break
-            if (_checkShipsAllHealth(attackerShips_) == 0 || _checkShipsAllHealth(defenderShips_) == 0) {
+            attackerHealth = _checkShipsAllHealth(attackerShips_);
+            defenderHealth = _checkShipsAllHealth(defenderShips_);
+            if (attackerHealth == 0 || defenderHealth == 0) {
                 break;
             }
         }
 
         //winner
-        if (_checkShipsAllHealth(attackerShips_) >= _checkShipsAllHealth(defenderShips_)) {
+        if (attackerHealth >= defenderHealth) {
             battleInfoBytes[0] = byte(uint8(1));
         }
 
