@@ -89,16 +89,8 @@ contract Explore {
         //check user explore time
         require(now >= account().userExploreTime(msg.sender, index_) + exploreConfig().exploreDuration(), "Explore not ready.");
 
-        //get ship info array from fleet
-        IFleets.Fleet memory fleet = fleets().userFleet(msg.sender, index_);
-        uint256 attackerLen = fleet.shipIdArray.length;
-        IShip.Info[] memory attackerShips = new IShip.Info[](attackerLen);
-        for (uint i = 0; i < attackerLen; i++) {
-            attackerShips[i] = ship().shipInfo(fleet.shipIdArray[i]);
-        }
-
-        //to battle ships
-        IBattle.BattleShip[] memory attacker = battle().toBattleShipArray(msg.sender, attackerShips);
+        //get battle ship array from fleet
+        IBattle.BattleShip[] memory attacker = battle().fleetToBattleShips(msg.sender, index_);
 
         //get pirate ships
         IBattle.BattleShip[] memory defender = exploreConfig().pirateBattleShips(level_);
