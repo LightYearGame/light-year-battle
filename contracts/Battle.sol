@@ -160,10 +160,10 @@ contract Battle is IBattle {
     }
 
     function fleetToBattleShips(address user_, uint256 index_) public override view returns (IBattle.BattleShip[] memory){
-        IFleets.Fleet memory fleet = fleets().userFleet(user_, index_);
-        IBattle.BattleShip[] memory ships = new IBattle.BattleShip[](fleet.shipIdArray.length);
-        for (uint i = 0; i < fleet.shipIdArray.length; i++) {
-            uint256[] memory attrs = shipAttrConfig().getAttributesByInfo(user_, ship().shipInfo(fleet.shipIdArray[i]));
+        uint32[] memory shipIdArray = fleets().userFleet(user_, index_).shipIdArray;
+        IBattle.BattleShip[] memory ships = new IBattle.BattleShip[](shipIdArray.length);
+        for (uint i = 0; i < shipIdArray.length; i++) {
+            uint256[] memory attrs = shipAttrConfig().getAttributesByInfo(user_, ship().shipInfo(shipIdArray[i]));
             uint8 shipType = uint8(attrs[2]);
             uint32 health = uint32(attrs[4]);
             uint32 attack = uint32(attrs[5]);
