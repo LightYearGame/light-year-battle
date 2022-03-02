@@ -14,7 +14,6 @@ interface IBattle {
     }
 
     struct BattleInfo {
-        bytes1 direction;
         uint8 battleType;
         uint8 fromIndex;
         uint8 toIndex;

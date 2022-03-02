@@ -328,7 +328,7 @@ contract Battle is IBattle {
         }
 
         //create battle info
-        BattleInfo memory info = BattleInfo(0x00, battleType, fromIndex, toIndex, attributeIndex, delta);
+        BattleInfo memory info = BattleInfo(battleType, fromIndex, toIndex, attributeIndex, delta);
 
         //battle info to bytes
         return (_battleInfoToBytes(info), defender_);
