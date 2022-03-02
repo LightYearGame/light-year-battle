@@ -248,11 +248,49 @@ contract Battle is IBattle {
         for (uint i = 0; i < round; i++) {
             bytes memory roundBytes;
 
-            //round bytes
+            uint8 fromIndex;
+            uint8 toIndex;
+            uint8 attributeIndex;
+            uint32 delta;
+
             if (i % 2 == 0) {
-                (roundBytes, defenderShips_) = _singleRound(0, attackerShips_, defenderShips_);
+                //from index and to index
+                fromIndex = uint8(_getFirstShipIndex(attackerShips_));
+                toIndex = uint8(_getFirstShipIndex(defenderShips_));
+
+                //attribute index
+                attributeIndex = 6;
+
+                // Cause damage
+                delta = battleConfig().getRealDamage(attackerShips_[fromIndex], defenderShips_[toIndex]);
+
+                if (defenderShips_[toIndex].health < delta) {
+                    defenderShips_[toIndex].health = 0;
+                } else {
+                    defenderShips_[toIndex].health -= delta;
+                }
+
+                //battle info to bytes
+                roundBytes = _battleInfoToBytes(0, fromIndex, toIndex, attributeIndex, delta);
             } else {
-                (roundBytes, attackerShips_) = _singleRound(1, defenderShips_, attackerShips_);
+                //from index and to index
+                fromIndex = uint8(_getFirstShipIndex(defenderShips_));
+                toIndex = uint8(_getFirstShipIndex(attackerShips_));
+            
+                //attribute index
+                attributeIndex = 6;
+            
+                // Cause damage
+                delta = battleConfig().getRealDamage(defenderShips_[fromIndex], attackerShips_[toIndex]);
+                
+                if (attackerShips_[toIndex].health < delta) {
+                    attackerShips_[toIndex].health = 0;
+                } else {
+                    attackerShips_[toIndex].health -= delta;
+                }
+
+                //battle info to bytes
+                roundBytes = _battleInfoToBytes(1, fromIndex, toIndex, attributeIndex, delta);
             }
 
             for (uint j = 0; j < roundBytes.length; ++j) {
@@ -281,35 +319,6 @@ contract Battle is IBattle {
         }
 
         return battleInfoBytes;
-    }
-
-    /**
-     *
-     */
-    function _singleRound(uint8 battleType_, BattleShip[] memory attacker_, BattleShip[] memory defender_) private view returns (bytes memory, BattleShip[] memory){
-
-        //from index and to index
-        uint8 fromIndex = uint8(_getFirstShipIndex(attacker_));
-        uint8 toIndex = uint8(_getFirstShipIndex(defender_));
-
-        //attribute index
-        uint8 attributeIndex = 6;
-
-        //attacker ship and defender ship
-        BattleShip memory attackerShip = attacker_[fromIndex];
-        BattleShip memory defenderShip = defender_[toIndex];
-
-        //cause damage
-        uint32 delta = battleConfig().getRealDamage(attackerShip, defenderShip);
-
-        if (defenderShip.health < delta) {
-            defenderShip.health = 0;
-        } else {
-            defenderShip.health -= delta;
-        }
-
-        //battle info to bytes
-        return (_battleInfoToBytes(battleType_, fromIndex, toIndex, attributeIndex, delta), defender_);
     }
 
     function _toBattleShipArray(address user_, IShip.Info[] memory array) private view returns (BattleShip[] memory){
