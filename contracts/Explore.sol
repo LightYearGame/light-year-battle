@@ -35,7 +35,7 @@ contract Explore is IExplore {
         return IExploreConfig(registry().exploreConfig());
     }
 
-    function handleExploreResult(uint256 index_, uint8 win_, uint256 userMaxLevel_, uint256 level_, bytes memory battleBytes_) external override {
+    function handleExploreResult(address user_, uint256 index_, uint8 win_, uint256 userMaxLevel_, uint256 level_, bytes memory battleBytes_) external override {
         require(msg.sender == registry().battle(), "Only battle can call");
 
         //explore lose
@@ -46,32 +46,35 @@ contract Explore is IExplore {
 
         //add user explore level
         if (userMaxLevel_ == level_) {
-            account().addExploreLevel(msg.sender);
+            account().addExploreLevel(user_);
             userMaxLevel_++;
         }
 
         // win and get real drop
-        uint32[] memory heroIdArray = fleets().userFleet(msg.sender, index_).heroIdArray;
+        uint32[] memory heroIdArray = fleets().userFleet(user_, index_).heroIdArray;
         uint256[] memory winResource = exploreConfig().getRealDropByLevel(level_, heroIdArray);
-        _exploreDrop(winResource);
+        _exploreDrop(user_, winResource);
         emit ExploreResult(1, winResource, userMaxLevel_, battleBytes_);
+
+        //user explore time
+        account().setUserExploreTime(user_, index_, now);
     }
 
-    function _exploreDrop(uint256[] memory winResource_) private {
+    function _exploreDrop(address user_, uint256[] memory winResource_) private {
         if (winResource_[0] > 0) {
-            ICommodityERC20(registry().tokenIron()).mintByInternalContracts(msg.sender, winResource_[0]);
+            ICommodityERC20(registry().tokenIron()).mintByInternalContracts(user_, winResource_[0]);
         }
 
         if (winResource_[1] > 0) {
-            ICommodityERC20(registry().tokenGold()).mintByInternalContracts(msg.sender, winResource_[1]);
+            ICommodityERC20(registry().tokenGold()).mintByInternalContracts(user_, winResource_[1]);
         }
 
         if (winResource_[2] > 0) {
-            ICommodityERC20(registry().tokenSilicate()).mintByInternalContracts(msg.sender, winResource_[2]);
+            ICommodityERC20(registry().tokenSilicate()).mintByInternalContracts(user_, winResource_[2]);
         }
 
         if (winResource_[3] > 0) {
-            ICommodityERC20(registry().tokenEnergy()).mintByInternalContracts(msg.sender, winResource_[3]);
+            ICommodityERC20(registry().tokenEnergy()).mintByInternalContracts(user_, winResource_[3]);
         }
     }
 }
