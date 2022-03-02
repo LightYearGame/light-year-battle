@@ -54,11 +54,11 @@ contract Battle is IBattle {
         return IExploreConfig(registry().exploreConfig());
     }
 
-    function battleConfig() private view returns (IBattleConfig){
+    function _battleConfig() private view returns (IBattleConfig){
         return IBattleConfig(registry().battleConfig());
     }
 
-    function shipAttrConfig() private view returns (IShipAttrConfig){
+    function _shipAttrConfig() private view returns (IShipAttrConfig){
         return IShipAttrConfig(registry().shipAttrConfig());
     }
 
@@ -174,8 +174,11 @@ contract Battle is IBattle {
     function _fleetToBattleShips(address user_, uint256 index_) private view returns (IBattle.BattleShip[] memory){
         uint32[] memory shipIdArray = fleets().userFleet(user_, index_).shipIdArray;
         IBattle.BattleShip[] memory ships = new IBattle.BattleShip[](shipIdArray.length);
+
+        IShipAttrConfig shipAttrConfig = _shipAttrConfig();
+
         for (uint i = 0; i < shipIdArray.length; i++) {
-            uint256[] memory attrs = shipAttrConfig().getAttributesByInfo(user_, ship().shipInfo(shipIdArray[i]));
+            uint256[] memory attrs = shipAttrConfig.getAttributesByInfo(user_, ship().shipInfo(shipIdArray[i]));
             ships[i].shipType = uint8(attrs[2]);
             ships[i].health = uint32(attrs[4]);
             ships[i].attack = uint32(attrs[5]);
@@ -235,17 +238,16 @@ contract Battle is IBattle {
             defenderShips_ = _basicBattleShip();
         }
         
-        //temp round
-        uint256 round = 20;
-
         //battle info bytes array
-        bytes memory battleInfoBytes = new bytes(1 + round * 6);
+        bytes memory battleInfoBytes = new bytes(1 + 20 * 6);
 
         uint32 attackerHealth = 0;
         uint32 defenderHealth = 0;
 
+        IBattleConfig battleConfig = _battleConfig();
+
         //battle range
-        for (uint i = 0; i < round; i++) {
+        for (uint i = 0; i < 20; i++) {
             bytes memory roundBytes;
 
             uint8 fromIndex;
@@ -262,7 +264,7 @@ contract Battle is IBattle {
                 attributeIndex = 6;
 
                 // Cause damage
-                delta = battleConfig().getRealDamage(attackerShips_[fromIndex], defenderShips_[toIndex]);
+                delta = battleConfig.getRealDamage(attackerShips_[fromIndex], defenderShips_[toIndex]);
 
                 if (defenderShips_[toIndex].health < delta) {
                     defenderShips_[toIndex].health = 0;
@@ -281,7 +283,7 @@ contract Battle is IBattle {
                 attributeIndex = 6;
             
                 // Cause damage
-                delta = battleConfig().getRealDamage(defenderShips_[fromIndex], attackerShips_[toIndex]);
+                delta = battleConfig.getRealDamage(defenderShips_[fromIndex], attackerShips_[toIndex]);
                 
                 if (attackerShips_[toIndex].health < delta) {
                     attackerShips_[toIndex].health = 0;
@@ -323,8 +325,11 @@ contract Battle is IBattle {
 
     function _toBattleShipArray(address user_, IShip.Info[] memory array) private view returns (BattleShip[] memory){
         BattleShip[] memory ships = new BattleShip[](array.length);
+
+        IShipAttrConfig shipAttrConfig = _shipAttrConfig();
+
         for (uint i = 0; i < ships.length; i++) {
-            uint256[] memory attrs = shipAttrConfig().getAttributesByInfo(user_, array[i]);
+            uint256[] memory attrs = shipAttrConfig.getAttributesByInfo(user_, array[i]);
             ships[i].shipType = uint8(attrs[2]);
             ships[i].health = uint32(attrs[4]);
             ships[i].attack = uint32(attrs[5]);
