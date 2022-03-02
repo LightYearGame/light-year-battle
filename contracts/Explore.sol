@@ -44,7 +44,7 @@ contract Explore is IExplore {
             return;
         }
 
-        uint256 userMaxLevel = account().userExploreLevel(msg.sender);
+        uint256 userMaxLevel = account().userExploreLevel(user_);
         require(level_ <= userMaxLevel, "Wrong level");
 
         //add user explore level
