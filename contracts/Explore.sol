@@ -35,7 +35,7 @@ contract Explore is IExplore {
         return IExploreConfig(registry().exploreConfig());
     }
 
-    function handleExploreResult(address user_, uint256 index_, uint8 win_, uint256 userMaxLevel_, uint256 level_, bytes memory battleBytes_) external override {
+    function handleExploreResult(address user_, uint256 index_, uint8 win_, uint256 level_, bytes memory battleBytes_) external override {
         require(msg.sender == registry().battle(), "Only battle can call");
 
         //explore lose
@@ -44,17 +44,20 @@ contract Explore is IExplore {
             return;
         }
 
+        uint256 userMaxLevel = account().userExploreLevel(msg.sender);
+        require(level_ <= userMaxLevel, "Wrong level");
+
         //add user explore level
-        if (userMaxLevel_ == level_) {
+        if (userMaxLevel == level_) {
             account().addExploreLevel(user_);
-            userMaxLevel_++;
+            userMaxLevel++;
         }
 
         // win and get real drop
         uint32[] memory heroIdArray = fleets().userFleet(user_, index_).heroIdArray;
         uint256[] memory winResource = exploreConfig().getRealDropByLevel(level_, heroIdArray);
         _exploreDrop(user_, winResource);
-        emit ExploreResult(1, winResource, userMaxLevel_, battleBytes_);
+        emit ExploreResult(1, winResource, userMaxLevel, battleBytes_);
 
         //user explore time
         account().setUserExploreTime(user_, index_, now);

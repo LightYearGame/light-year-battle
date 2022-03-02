@@ -201,8 +201,7 @@ contract Battle is IBattle {
         uint8 win = uint8(battleBytes[0]);
 
         //handle explore result
-        uint256 userMaxLevel = account().userExploreLevel(msg.sender);
-        explore().handleExploreResult(msg.sender, index_, win, userMaxLevel, level_, battleBytes);
+        explore().handleExploreResult(msg.sender, index_, win, level_, battleBytes);
     }
 
     function getFleetBattleInfo(uint256 index_, uint256 level_) external view returns(bytes memory) {
