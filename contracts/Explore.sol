@@ -35,7 +35,7 @@ contract Explore is IExplore {
         return IExploreConfig(registry().exploreConfig());
     }
 
-    function handleExploreResult(address user_, uint256 index_, uint8 win_, uint256 level_, bytes memory battleBytes_) external override {
+    function handleExploreResult(address user_, uint256 index_, uint8 win_, uint256 level_, bytes calldata battleBytes_) external override {
         require(msg.sender == registry().battle(), "Only battle can call");
 
         //explore lose

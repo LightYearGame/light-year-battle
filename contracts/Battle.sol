@@ -252,7 +252,7 @@ contract Battle is IBattle {
             if (i % 2 == 0) {
                 (roundBytes, defenderShips_) = _singleRound(0, attackerShips_, defenderShips_);
             } else {
-                (roundBytes, attackerShips_) = _singleRound(0, defenderShips_, attackerShips_);
+                (roundBytes, attackerShips_) = _singleRound(1, defenderShips_, attackerShips_);
             }
 
             for (uint j = 0; j < roundBytes.length; ++j) {
@@ -260,8 +260,16 @@ contract Battle is IBattle {
             }
 
             //round break
-            attackerHealth = _checkShipsAllHealth(attackerShips_);
-            defenderHealth = _checkShipsAllHealth(defenderShips_);
+            attackerHealth = 0;
+            for (uint j = 0; j < attackerShips_.length; j++) {
+                attackerHealth += attackerShips_[j].health;
+            }
+
+            defenderHealth = 0;
+            for (uint j = 0; j < defenderShips_.length; j++) {
+                defenderHealth += defenderShips_[j].health;
+            }
+
             if (attackerHealth == 0 || defenderHealth == 0) {
                 break;
             }
@@ -275,18 +283,10 @@ contract Battle is IBattle {
         return battleInfoBytes;
     }
 
-    function _checkShipsAllHealth(BattleShip[] memory ships_) private pure returns (uint32){
-        uint32 health = 0;
-        for (uint i = 0; i < ships_.length; i++) {
-            health += ships_[i].health;
-        }
-        return health;
-    }
-
     /**
      *
      */
-    function _singleRound(uint8 battleType, BattleShip[] memory attacker_, BattleShip[] memory defender_) private view returns (bytes memory, BattleShip[] memory){
+    function _singleRound(uint8 battleType_, BattleShip[] memory attacker_, BattleShip[] memory defender_) private view returns (bytes memory, BattleShip[] memory){
 
         //from index and to index
         uint8 fromIndex = uint8(_getFirstShipIndex(attacker_));
@@ -308,11 +308,8 @@ contract Battle is IBattle {
             defenderShip.health -= delta;
         }
 
-        //create battle info
-        BattleInfo memory info = BattleInfo(battleType, fromIndex, toIndex, attributeIndex, delta);
-
         //battle info to bytes
-        return (_battleInfoToBytes(info), defender_);
+        return (_battleInfoToBytes(battleType_, fromIndex, toIndex, attributeIndex, delta), defender_);
     }
 
     function _toBattleShipArray(address user_, IShip.Info[] memory array) private view returns (BattleShip[] memory){
@@ -345,15 +342,21 @@ contract Battle is IBattle {
     /**
      *
      */
-    function _battleInfoToBytes(BattleInfo memory info) private pure returns (bytes memory){
-        bytes1 direction = _toDirection(info.battleType, info.fromIndex, info.toIndex);
+    function _battleInfoToBytes(
+        uint8 battleType_,
+        uint8 fromIndex_,
+        uint8 toIndex_,
+        uint8 attributeIndex_,
+        uint32 delta_
+    ) private pure returns (bytes memory){
+        bytes1 direction = _toDirection(battleType_, fromIndex_, toIndex_);
         bytes memory b = new bytes(6);
         b[0] = byte(direction);
-        b[1] = byte(info.attributeIndex);
-        b[2] = byte(uint8(info.delta / 16777216));
-        b[3] = byte(uint8((info.delta / 65536) % 256));
-        b[4] = byte(uint8((info.delta % 65536) / 256));
-        b[5] = byte(uint8(info.delta % 256));
+        b[1] = byte(attributeIndex_);
+        b[2] = byte(uint8(delta_ / 16777216));
+        b[3] = byte(uint8((delta_ / 65536) % 256));
+        b[4] = byte(uint8((delta_ % 65536) / 256));
+        b[5] = byte(uint8(delta_ % 256));
         return b;
     }
 
