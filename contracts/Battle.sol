@@ -224,24 +224,6 @@ contract Battle is IBattle {
         return _getBattleInfo(attacker,defender);
     }
 
-    function _exploreDrop(uint256[] memory winResource_) private {
-        if (winResource_[0] > 0) {
-            ICommodityERC20(registry().tokenIron()).mintByInternalContracts(msg.sender, winResource_[0]);
-        }
-
-        if (winResource_[1] > 0) {
-            ICommodityERC20(registry().tokenGold()).mintByInternalContracts(msg.sender, winResource_[1]);
-        }
-
-        if (winResource_[2] > 0) {
-            ICommodityERC20(registry().tokenSilicate()).mintByInternalContracts(msg.sender, winResource_[2]);
-        }
-
-        if (winResource_[3] > 0) {
-            ICommodityERC20(registry().tokenEnergy()).mintByInternalContracts(msg.sender, winResource_[3]);
-        }
-    }
-
     function _battleByBattleShip(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) private view returns (bytes memory){
 
         //empty attacker
