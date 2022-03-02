@@ -5,13 +5,17 @@ pragma solidity ^0.6.12;
 import "./utils/BytesUtils.sol";
 import "./interface/IBattle.sol";
 import "./interface/IAccount.sol";
+import "./interface/IExplore.sol";
+import "./interface/IExploreConfig.sol";
 import "./interface/IRegistry.sol";
 import "./interface/IFleets.sol";
 import "./interface/IFleetsConfig.sol";
 import "./interface/IBattleConfig.sol";
 import "./interface/IShipAttrConfig.sol";
+import "./interface/ICommodityERC20.sol";
 
 contract Battle is IBattle {
+
     using BytesUtils for BytesUtils;
 
     address public registryAddress;
@@ -40,6 +44,14 @@ contract Battle is IBattle {
 
     function ship() private view returns (IShip){
         return IShip(registry().ship());
+    }
+
+    function explore() private view returns (IExplore){
+        return IExplore(registry().explore());
+    }
+
+    function exploreConfig() private view returns (IExploreConfig){
+        return IExploreConfig(registry().exploreConfig());
     }
 
     function battleConfig() private view returns (IBattleConfig){
@@ -99,12 +111,12 @@ contract Battle is IBattle {
         }
 
         //to battle ship array
-        BattleShip[] memory attacker = toBattleShipArray(attacker_, attackerShips);
-        BattleShip[] memory defender = toBattleShipArray(defender_, defenderShips);
-        return battleByBattleShip(attacker, defender);
+        BattleShip[] memory attacker = _toBattleShipArray(attacker_, attackerShips);
+        BattleShip[] memory defender = _toBattleShipArray(defender_, defenderShips);
+        return _battleByBattleShip(attacker, defender);
     }
 
-    function getBattleInfo(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) external override view returns (bytes memory) {
+    function _getBattleInfo(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) private view returns (bytes memory) {
         //ship length
         uint256 attackerLen = attackerShips_.length;
         uint256 defenderLen = defenderShips_.length;
@@ -159,7 +171,7 @@ contract Battle is IBattle {
         return result;
     }
 
-    function fleetToBattleShips(address user_, uint256 index_) public override view returns (IBattle.BattleShip[] memory){
+    function _fleetToBattleShips(address user_, uint256 index_) private view returns (IBattle.BattleShip[] memory){
         uint32[] memory shipIdArray = fleets().userFleet(user_, index_).shipIdArray;
         IBattle.BattleShip[] memory ships = new IBattle.BattleShip[](shipIdArray.length);
         for (uint i = 0; i < shipIdArray.length; i++) {
@@ -170,10 +182,73 @@ contract Battle is IBattle {
             uint32 defense = uint32(attrs[6]);
             ships[i] = BattleShip(health, attack, defense, shipType);
         }
+
         return ships;
     }
 
-    function battleByBattleShip(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) public override view returns (bytes memory){
+    function fleetBattleExplore(uint256 index_, uint256 level_) external {
+
+        //check user explore time
+        require(now >= account().userExploreTime(msg.sender, index_) + exploreConfig().exploreDuration(), "Explore not ready.");
+
+        //get battle ship array from fleet
+        IBattle.BattleShip[] memory attacker = _fleetToBattleShips(msg.sender, index_);
+
+        //get pirate ships
+        IBattle.BattleShip[] memory defender = exploreConfig().pirateBattleShips(level_);
+
+        //battle
+        bytes memory battleBytes = _battleByBattleShip(attacker, defender);
+        uint8 win = uint8(battleBytes[0]);
+
+        //handle explore result
+        uint256 userMaxLevel = account().userExploreLevel(msg.sender);
+        explore().handleExploreResult(index_, win, userMaxLevel, level_, battleBytes);
+
+        //user explore time
+        if (win == 1) {
+            account().setUserExploreTime(msg.sender, index_, now);
+        }
+    }
+
+    function getFleetBattleInfo(uint256 index_, uint256 level_) external view returns(bytes memory) {
+
+        //get ship info array from fleet
+        IFleets.Fleet memory fleet = fleets().userFleet(msg.sender, index_);
+        uint256 attackerLen = fleet.shipIdArray.length;
+        IShip.Info[] memory attackerShips = new IShip.Info[](attackerLen);
+        for (uint i = 0; i < attackerLen; i++) {
+            attackerShips[i] = ship().shipInfo(fleet.shipIdArray[i]);
+        }
+
+        //to battle ships
+        IBattle.BattleShip[] memory attacker = _toBattleShipArray(msg.sender, attackerShips);
+
+        //get pirate ships
+        IBattle.BattleShip[] memory defender = exploreConfig().pirateBattleShips(level_);
+
+        return _getBattleInfo(attacker,defender);
+    }
+
+    function _exploreDrop(uint256[] memory winResource_) private {
+        if (winResource_[0] > 0) {
+            ICommodityERC20(registry().tokenIron()).mintByInternalContracts(msg.sender, winResource_[0]);
+        }
+
+        if (winResource_[1] > 0) {
+            ICommodityERC20(registry().tokenGold()).mintByInternalContracts(msg.sender, winResource_[1]);
+        }
+
+        if (winResource_[2] > 0) {
+            ICommodityERC20(registry().tokenSilicate()).mintByInternalContracts(msg.sender, winResource_[2]);
+        }
+
+        if (winResource_[3] > 0) {
+            ICommodityERC20(registry().tokenEnergy()).mintByInternalContracts(msg.sender, winResource_[3]);
+        }
+    }
+
+    function _battleByBattleShip(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) private view returns (bytes memory){
 
         //empty attacker
         if (attackerShips_.length == 0) {
@@ -265,7 +340,7 @@ contract Battle is IBattle {
         return (_battleInfoToBytes(info), defender_);
     }
 
-    function toBattleShipArray(address user_, IShip.Info[] memory array) public override view returns (BattleShip[] memory){
+    function _toBattleShipArray(address user_, IShip.Info[] memory array) private view returns (BattleShip[] memory){
         BattleShip[] memory ships = new BattleShip[](array.length);
         for (uint i = 0; i < ships.length; i++) {
             uint256[] memory attrs = shipAttrConfig().getAttributesByInfo(user_, array[i]);

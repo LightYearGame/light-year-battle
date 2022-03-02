@@ -21,9 +21,4 @@ interface IBattle {
         uint8 attributeIndex;
         uint32 delta;
     }
-
-    function fleetToBattleShips(address user_, uint256 index_) external view returns(IBattle.BattleShip[] memory);
-    function toBattleShipArray(address, IShip.Info[] memory array) external view returns (BattleShip[] memory);
-    function battleByBattleShip(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) external view returns (bytes memory);
-    function getBattleInfo(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) external view returns (bytes memory);
 }
