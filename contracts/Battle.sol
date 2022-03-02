@@ -320,12 +320,10 @@ contract Battle is IBattle {
         BattleShip[] memory ships = new BattleShip[](array.length);
         for (uint i = 0; i < ships.length; i++) {
             uint256[] memory attrs = shipAttrConfig().getAttributesByInfo(user_, array[i]);
-            uint8 shipType = uint8(attrs[2]);
-            uint32 health = uint32(attrs[4]);
-            uint32 attack = uint32(attrs[5]);
-            uint32 defense = uint32(attrs[6]);
-            BattleShip memory battleShip = BattleShip(health, attack, defense, shipType);
-            ships[i] = battleShip;
+            ships[i].shipType = uint8(attrs[2]);
+            ships[i].health = uint32(attrs[4]);
+            ships[i].attack = uint32(attrs[5]);
+            ships[i].defense = uint32(attrs[6]);
         }
         return ships;
     }
