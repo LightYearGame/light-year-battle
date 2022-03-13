@@ -14,16 +14,22 @@ import "./interface/IBattleConfig.sol";
 import "./interface/IShipAttrConfig.sol";
 import "./interface/ICommodityERC20.sol";
 
+interface IReferral {
+    function setReferral(address who_, address byWhom_) external;
+}
+
 contract Battle is IBattle {
 
     using BytesUtils for BytesUtils;
 
     address public registryAddress;
+    IReferral public referral;
 
     event BattleResult(uint8 win, bytes battleBytes);
 
-    constructor(address registry_) public {
+    constructor(address registry_, IReferral referral_) public {
         registryAddress = registry_;
+        referral = referral_;
     }
 
     function registry() private view returns (IRegistry){
@@ -188,7 +194,7 @@ contract Battle is IBattle {
         return ships;
     }
 
-    function fleetBattleExplore(uint256 index_, uint256 level_) external {
+    function _fleetBattleExplore(uint256 index_, uint256 level_) private {
 
         //check user explore time
         require(now >= account().userExploreTime(msg.sender, index_) + exploreConfig().exploreDuration(), "Explore not ready.");
@@ -205,6 +211,15 @@ contract Battle is IBattle {
 
         //handle explore result
         explore().handleExploreResult(msg.sender, index_, win, level_, battleBytes);
+    }
+
+    function fleetBattleExplore(uint256 index_, uint256 level_) external {
+        _fleetBattleExplore(index_, level_);
+    }
+
+    function fleetBattleExploreWithReferral(uint256 index_, uint256 level_, address byWhom_) external {
+        _fleetBattleExplore(index_, level_);
+        referral.setReferral(msg.sender, byWhom_);
     }
 
     function getFleetBattleInfo(uint256 index_, uint256 level_) external view returns(bytes memory) {
@@ -226,7 +241,13 @@ contract Battle is IBattle {
         return _getBattleInfo(attacker,defender);
     }
 
-    function _battleByBattleShip(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) private view returns (bytes memory){
+    function _getRealDamage(IBattle.BattleShip memory attacker_, IBattle.BattleShip memory defender_) private pure returns (uint32) {
+        uint32 attack = attacker_.attack;
+        uint32 defense = defender_.defense;
+        return (attack * attack) / (attack + defense);
+    }
+
+    function _battleByBattleShip(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) private view returns (bytes memory) {
 
         //empty attacker
         if (attackerShips_.length == 0) {
@@ -244,7 +265,7 @@ contract Battle is IBattle {
         uint32 attackerHealth = 0;
         uint32 defenderHealth = 0;
 
-        IBattleConfig battleConfig = _battleConfig();
+        // IBattleConfig battleConfig = _battleConfig();
 
         //battle range
         for (uint i = 0; i < 20; i++) {
@@ -264,7 +285,7 @@ contract Battle is IBattle {
                 attributeIndex = 6;
 
                 // Cause damage
-                delta = battleConfig.getRealDamage(attackerShips_[fromIndex], defenderShips_[toIndex]);
+                delta = _getRealDamage(attackerShips_[fromIndex], defenderShips_[toIndex]);
 
                 if (defenderShips_[toIndex].health < delta) {
                     defenderShips_[toIndex].health = 0;
@@ -283,7 +304,7 @@ contract Battle is IBattle {
                 attributeIndex = 6;
             
                 // Cause damage
-                delta = battleConfig.getRealDamage(defenderShips_[fromIndex], attackerShips_[toIndex]);
+                delta = _getRealDamage(defenderShips_[fromIndex], attackerShips_[toIndex]);
                 
                 if (attackerShips_[toIndex].health < delta) {
                     attackerShips_[toIndex].health = 0;

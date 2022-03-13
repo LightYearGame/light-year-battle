@@ -9,14 +9,20 @@ import "./interface/IExplore.sol";
 import "./interface/IExploreConfig.sol";
 import "./interface/ICommodityERC20.sol";
 
+interface IReferral {
+    function onReward(address who_, uint256[] calldata amountArray_) external;
+}
+
 contract Explore is IExplore {
 
     address public registryAddress;
+    IReferral public referral;
 
     event ExploreResult(uint256 win, uint256[] resource, uint256 level, bytes battleBytes);
 
-    constructor(address registry_) public {
+    constructor(address registry_, IReferral referral_) public {
         registryAddress = registry_;
+        referral = referral_;
     }
 
     function registry() private view returns (IRegistry){
@@ -79,5 +85,7 @@ contract Explore is IExplore {
         if (winResource_[3] > 0) {
             ICommodityERC20(registry().tokenEnergy()).mintByInternalContracts(user_, winResource_[3]);
         }
+
+        referral.onReward(user_, winResource_);
     }
 }
