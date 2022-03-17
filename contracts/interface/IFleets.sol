@@ -5,7 +5,7 @@ pragma solidity ^0.6.12;
 interface IFleets {
 
     //fleet status
-    //0-Home, 1-Guard, 2-Market, 3-GoBattle
+    //0-Home, 1-Guard, 2-Market, 3-GoBattle, 4-AutoExplore
 
     //struct Fleet
     struct Fleet {
@@ -22,4 +22,6 @@ interface IFleets {
     function getGuardFleet(address addr_) external view returns (Fleet memory);
     function createFleet() external returns(uint256);
     function shipOwnerOf(uint256) external view returns(address);
+    function fleetAutoExplore(address user_, uint256 fleetIndex_, uint32 level_, uint256 days_, uint256 ends_) external;
+    function endAutoExplore(address user_, uint256 fleetIndex_) external;
 }

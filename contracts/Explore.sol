@@ -69,6 +69,18 @@ contract Explore is IExplore {
         account().setUserExploreTime(user_, index_, now);
     }
 
+    function claimAutoExplore(uint256 index_) external {
+        IFleets.Fleet memory fleet = fleets().userFleet(msg.sender, index_);
+        require(now >= fleet.missionEndTime, "Mission undone.");
+        
+        uint256[] memory winResource = exploreConfig().getRealDropByLevel(fleet.target, fleet.heroIdArray);
+        for(uint i=0; i<winResource.length; i++){
+            winResource[i]*=fleet.missionStartTime;
+        }
+        _exploreDrop(msg.sender, winResource);
+        emit ExploreResult(1, winResource, fleet.target, "");
+    }
+
     function _exploreDrop(address user_, uint256[] memory winResource_) private {
         if (winResource_[0] > 0) {
             ICommodityERC20(registry().tokenIron()).mintByInternalContracts(user_, winResource_[0]);

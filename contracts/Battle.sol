@@ -194,7 +194,7 @@ contract Battle is IBattle {
         return ships;
     }
 
-    function _fleetBattleExplore(uint256 index_, uint256 level_) private {
+    function _fleetBattleExplore(uint256 index_, uint256 level_, bool auto_) private {
 
         //check user explore time
         require(now >= account().userExploreTime(msg.sender, index_) + exploreConfig().exploreDuration(), "Explore not ready.");
@@ -210,15 +210,22 @@ contract Battle is IBattle {
         uint8 win = uint8(battleBytes[0]);
 
         //handle explore result
-        explore().handleExploreResult(msg.sender, index_, win, level_, battleBytes);
+        if(!auto_){
+            explore().handleExploreResult(msg.sender, index_, win, level_, battleBytes);
+        }
+    }
+
+    function fleetAutoExplore(uint256 index_, uint32 level_, uint256 days_) external {
+        _fleetBattleExplore(index_, level_, true);
+        fleets().fleetAutoExplore(msg.sender, index_, level_, days_, now+days_*24*60*60*1000);
     }
 
     function fleetBattleExplore(uint256 index_, uint256 level_) external {
-        _fleetBattleExplore(index_, level_);
+        _fleetBattleExplore(index_, level_, false);
     }
 
     function fleetBattleExploreWithReferral(uint256 index_, uint256 level_, address byWhom_) external {
-        _fleetBattleExplore(index_, level_);
+        _fleetBattleExplore(index_, level_, false);
         referral.setReferral(msg.sender, byWhom_);
     }
 
@@ -247,7 +254,7 @@ contract Battle is IBattle {
         return (attack * attack) / (attack + defense);
     }
 
-    function _battleByBattleShip(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) private view returns (bytes memory) {
+    function _battleByBattleShip(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) private pure returns (bytes memory) {
 
         //empty attacker
         if (attackerShips_.length == 0) {
