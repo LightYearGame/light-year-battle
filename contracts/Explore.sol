@@ -69,15 +69,17 @@ contract Explore is IExplore {
         account().setUserExploreTime(user_, index_, now);
     }
 
-    function claimAutoExplore(uint256 index_) external {
-        IFleets.Fleet memory fleet = fleets().userFleet(msg.sender, index_);
+    function claimAutoExplore(address user_, uint256 index_) external override {
+        require(msg.sender == registry().battle(), "Only battle can call");
+
+        IFleets.Fleet memory fleet = fleets().userFleet(user_, index_);
         require(now >= fleet.missionEndTime, "Mission undone.");
         
         uint256[] memory winResource = exploreConfig().getRealDropByLevel(fleet.target, fleet.heroIdArray);
         for(uint i=0; i<winResource.length; i++){
             winResource[i]*=fleet.missionStartTime;
         }
-        _exploreDrop(msg.sender, winResource);
+        _exploreDrop(user_, winResource);
         emit ExploreResult(1, winResource, fleet.target, "");
     }
 

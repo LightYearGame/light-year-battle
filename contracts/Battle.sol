@@ -220,6 +220,11 @@ contract Battle is IBattle {
         fleets().fleetAutoExplore(msg.sender, index_, level_, days_, now+days_*24*60*60*1000);
     }
 
+    function endAutoExplore(uint256 index_) external{
+        explore().claimAutoExplore(msg.sender, index_);
+        fleets().endAutoExplore(msg.sender, index_);
+    }
+
     function fleetBattleExplore(uint256 index_, uint256 level_) external {
         _fleetBattleExplore(index_, level_, false);
     }
