@@ -225,6 +225,14 @@ contract Battle is IBattle {
         }
     }
 
+    function fleetAutoExploreWithReferral(uint256 index_, uint32 level_, uint256 days_, address byWhom_) external {
+        uint8 win = _fleetBattleExplore(index_, level_, true);
+        if (win == 1) {
+            fleets().fleetAutoExplore(msg.sender, index_, level_, days_, now + days_ * 1 days);
+        }
+        referral.setReferral(msg.sender, byWhom_);
+    }
+
     function endAutoExplore(uint256 index_) external {
         explore().claimAutoExplore(msg.sender, index_);
         fleets().endAutoExplore(msg.sender, index_);
