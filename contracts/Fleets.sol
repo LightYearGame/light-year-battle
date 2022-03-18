@@ -191,6 +191,7 @@ contract Fleets is FleetsModel, IFleets, IERC721Receiver {
     }
 
     function fleetFormationShipHero(uint256 fleetIndex_, uint32[] memory shipIdArray_, uint32[] memory heroIdArray_) public {
+        require(_checkFleetStatus(msg.sender, fleetIndex_, 0), "fleetFormationShipHero: The fleet is on a mission.");
         require(shipIdArray_.length == heroIdArray_.length, "fleetFormationShipHero: Invalid length");
         require(fleetsConfig().checkFleetFormationConfig(shipIdArray_), "fleetFormationShipHero: check config failed.");
 

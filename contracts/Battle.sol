@@ -196,6 +196,9 @@ contract Battle is IBattle {
 
     function _fleetBattleExplore(uint256 index_, uint256 level_, bool auto_) private {
 
+        //check fleet status
+        require(fleets().userFleet(msg.sender, index_).status==0, "The fleet is on a mission.");
+
         //check user explore time
         require(now >= account().userExploreTime(msg.sender, index_) + exploreConfig().exploreDuration(), "Explore not ready.");
 
@@ -217,7 +220,7 @@ contract Battle is IBattle {
 
     function fleetAutoExplore(uint256 index_, uint32 level_, uint256 days_) external {
         _fleetBattleExplore(index_, level_, true);
-        fleets().fleetAutoExplore(msg.sender, index_, level_, days_, now+days_*24*60*60*1000);
+        fleets().fleetAutoExplore(msg.sender, index_, level_, days_, now+days_* 1 days);
     }
 
     function endAutoExplore(uint256 index_) external{
