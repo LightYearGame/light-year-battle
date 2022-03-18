@@ -2,7 +2,6 @@
 pragma solidity ^0.6.12;
 
 interface IExplore {
-    function handleExploreResult(address user_, uint256 index_, uint8 win_, uint256 level_, bytes calldata battleBytes_) external;
+    function handleExploreResult(address user_, uint256 index_, uint8 win_, uint256 level_, bytes calldata battleBytes_, bool auto_) external;
     function claimAutoExplore(address user_, uint256 index_) external;
-    function handleAutoExplore(address user_, uint256 index_, uint8 win_, uint256 level_) external;
 }

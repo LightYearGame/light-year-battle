@@ -41,7 +41,7 @@ contract Explore is IExplore {
         return IExploreConfig(registry().exploreConfig());
     }
 
-    function handleExploreResult(address user_, uint256 index_, uint8 win_, uint256 level_, bytes calldata battleBytes_) external override {
+    function handleExploreResult(address user_, uint256 index_, uint8 win_, uint256 level_, bytes calldata battleBytes_, bool auto_) external override {
         require(msg.sender == registry().battle(), "Only battle can call");
 
         //explore lose
@@ -60,35 +60,14 @@ contract Explore is IExplore {
         }
 
         // win and get real drop
-        uint32[] memory heroIdArray = fleets().userFleet(user_, index_).heroIdArray;
-        uint256[] memory winResource = exploreConfig().getRealDropByLevel(level_, heroIdArray);
-        _exploreDrop(user_, winResource);
-        emit ExploreResult(1, winResource, userMaxLevel, battleBytes_);
-
-        //user explore time
-        account().setUserExploreTime(user_, index_, now);
-    }
-
-    function handleAutoExplore(address user_, uint256 index_, uint8 win_, uint256 level_) external override {
-        require(msg.sender == registry().battle(), "Only battle can call");
-
-        //explore lose
-        if (win_ == 0) {
-            emit ExploreResult(0, new uint256[](0), 0, "");
-            return;
+        if (auto_) {
+            emit ExploreResult(1, new uint256[](0), userMaxLevel, "");
+        } else {
+            uint32[] memory heroIdArray = fleets().userFleet(user_, index_).heroIdArray;
+            uint256[] memory winResource = exploreConfig().getRealDropByLevel(level_, heroIdArray);
+            _exploreDrop(user_, winResource);
+            emit ExploreResult(1, winResource, userMaxLevel, battleBytes_);
         }
-
-        uint256 userMaxLevel = account().userExploreLevel(user_);
-        require(level_ <= userMaxLevel, "Wrong level");
-
-        //add user explore level
-        if (userMaxLevel == level_) {
-            account().addExploreLevel(user_);
-            userMaxLevel++;
-        }
-
-        //explore win
-        emit ExploreResult(1, new uint256[](0), 0, "");
 
         //user explore time
         account().setUserExploreTime(user_, index_, now);
