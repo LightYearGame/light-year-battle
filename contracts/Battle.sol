@@ -197,7 +197,7 @@ contract Battle is IBattle {
     function _fleetBattleExplore(uint256 index_, uint256 level_, bool auto_) private {
 
         //check fleet status
-        require(fleets().userFleet(msg.sender, index_).status==0, "The fleet is on a mission.");
+        require(fleets().userFleet(msg.sender, index_).status == 0, "The fleet is on a mission.");
 
         //check user explore time
         require(now >= account().userExploreTime(msg.sender, index_) + exploreConfig().exploreDuration(), "Explore not ready.");
@@ -213,19 +213,19 @@ contract Battle is IBattle {
         uint8 win = uint8(battleBytes[0]);
 
         //handle explore result
-        if(auto_){
+        if (auto_) {
             explore().handleAutoExplore(msg.sender, index_, win, level_);
-        }else{
+        } else {
             explore().handleExploreResult(msg.sender, index_, win, level_, battleBytes);
         }
     }
 
     function fleetAutoExplore(uint256 index_, uint32 level_, uint256 days_) external {
         _fleetBattleExplore(index_, level_, true);
-        fleets().fleetAutoExplore(msg.sender, index_, level_, days_, now+days_* 1 days);
+        fleets().fleetAutoExplore(msg.sender, index_, level_, days_, now + days_ * 1 days);
     }
 
-    function endAutoExplore(uint256 index_) external{
+    function endAutoExplore(uint256 index_) external {
         explore().claimAutoExplore(msg.sender, index_);
         fleets().endAutoExplore(msg.sender, index_);
     }
@@ -239,7 +239,7 @@ contract Battle is IBattle {
         referral.setReferral(msg.sender, byWhom_);
     }
 
-    function getFleetBattleInfo(uint256 index_, uint256 level_) external view returns(bytes memory) {
+    function getFleetBattleInfo(uint256 index_, uint256 level_) external view returns (bytes memory) {
 
         //get ship info array from fleet
         IFleets.Fleet memory fleet = fleets().userFleet(msg.sender, index_);
@@ -255,7 +255,7 @@ contract Battle is IBattle {
         //get pirate ships
         IBattle.BattleShip[] memory defender = exploreConfig().pirateBattleShips(level_);
 
-        return _getBattleInfo(attacker,defender);
+        return _getBattleInfo(attacker, defender);
     }
 
     function _getRealDamage(IBattle.BattleShip memory attacker_, IBattle.BattleShip memory defender_) private pure returns (uint32) {
@@ -275,7 +275,7 @@ contract Battle is IBattle {
         if (defenderShips_.length == 0) {
             defenderShips_ = _basicBattleShip();
         }
-        
+
         //battle info bytes array
         bytes memory battleInfoBytes = new bytes(1 + 20 * 6);
 
@@ -316,13 +316,13 @@ contract Battle is IBattle {
                 //from index and to index
                 fromIndex = uint8(_getFirstShipIndex(defenderShips_));
                 toIndex = uint8(_getFirstShipIndex(attackerShips_));
-            
+
                 //attribute index
                 attributeIndex = 6;
-            
+
                 // Cause damage
                 delta = _getRealDamage(defenderShips_[fromIndex], attackerShips_[toIndex]);
-                
+
                 if (attackerShips_[toIndex].health < delta) {
                     attackerShips_[toIndex].health = 0;
                 } else {
