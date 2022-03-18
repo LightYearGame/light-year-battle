@@ -69,6 +69,31 @@ contract Explore is IExplore {
         account().setUserExploreTime(user_, index_, now);
     }
 
+    function handleAutoExplore(address user_, uint256 index_, uint8 win_, uint256 level_) external override {
+        require(msg.sender == registry().battle(), "Only battle can call");
+
+        //explore lose
+        if (win_ == 0) {
+            emit ExploreResult(0, new uint256[](0), 0, "");
+            return;
+        }
+
+        uint256 userMaxLevel = account().userExploreLevel(user_);
+        require(level_ <= userMaxLevel, "Wrong level");
+
+        //add user explore level
+        if (userMaxLevel == level_) {
+            account().addExploreLevel(user_);
+            userMaxLevel++;
+        }
+
+        //explore win
+        emit ExploreResult(1, new uint256[](0), 0, "");
+
+        //user explore time
+        account().setUserExploreTime(user_, index_, now);
+    }
+
     function claimAutoExplore(address user_, uint256 index_) external override {
         require(msg.sender == registry().battle(), "Only battle can call");
 

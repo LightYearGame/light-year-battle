@@ -213,7 +213,9 @@ contract Battle is IBattle {
         uint8 win = uint8(battleBytes[0]);
 
         //handle explore result
-        if(!auto_){
+        if(auto_){
+            explore().handleAutoExplore(msg.sender, index_, win, level_);
+        }else{
             explore().handleExploreResult(msg.sender, index_, win, level_, battleBytes);
         }
     }
