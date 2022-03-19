@@ -81,7 +81,7 @@ contract Explore is IExplore {
         require(now >= fleet.missionEndTime, "Mission undone.");
 
         //burn energy
-        ICommodityERC20(registry().tokenEnergy()).transferFrom(msg.sender, address(this), fleet.missionStartTime * 10 * 1e18);
+        ICommodityERC20(registry().tokenEnergy()).transferFrom(user_, address(this), fleet.missionStartTime * 10 * 1e18);
         ICommodityERC20(registry().tokenEnergy()).burn(fleet.missionStartTime * 10 * 1e18);
 
         //claim resource
