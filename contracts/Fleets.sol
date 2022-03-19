@@ -324,7 +324,7 @@ contract Fleets is FleetsModel, IFleets, IERC721Receiver {
     function endAutoExplore(address user_, uint256 fleetIndex_) external override {
         require(msg.sender == registry().battle(), "endAutoExplore: require battle contract.");
         require(_checkFleetStatus(user_, fleetIndex_, 4), "endAutoExplore: The fleet is on a mission.");
-        _changeFleetStatus(msg.sender, fleetIndex_, 0, 0, block.timestamp, block.timestamp);
+        _changeFleetStatus(user_, fleetIndex_, 0, 0, block.timestamp, block.timestamp);
     }
 
     function getHeroPosition(uint256 heroId_) public view returns (uint256, uint256) {
