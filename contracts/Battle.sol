@@ -96,7 +96,12 @@ contract Battle is IBattle {
     /**
      * battle by fleet 
      */
-    function battleByFleet(address attacker_, address defender_, IFleets.Fleet memory attackerFleet_, IFleets.Fleet memory defenderFleet_) public view returns (bytes memory){
+    function battleByFleet(
+        address attacker_,
+        address defender_,
+        IFleets.Fleet memory attackerFleet_,
+        IFleets.Fleet memory defenderFleet_
+    ) public view returns (bytes memory) {
         //ship length
         uint256 attackerLen = attackerFleet_.shipIdArray.length;
         uint256 defenderLen = defenderFleet_.shipIdArray.length;
@@ -166,6 +171,7 @@ contract Battle is IBattle {
                 result = abi.encodePacked(result, uint8(0));
             }
         }
+
         for (uint i = 0; i < fleetsConfig().getFleetShipLimit(); i++) {
             if (i < defenderLen) {
                 result = abi.encodePacked(result, defenderShips_[i].shipType);
@@ -221,15 +227,16 @@ contract Battle is IBattle {
     function fleetAutoExplore(uint256 index_, uint32 level_, uint256 days_) external {
         uint8 win = _fleetBattleExplore(index_, level_, true);
         if (win == 1) {
-            fleets().fleetAutoExplore(msg.sender, index_, level_, now, now + days_ * 1 days);
+            fleets().fleetAutoExplore(msg.sender, index_, level_, now, now + days_ * (1 days));
         }
     }
 
     function fleetAutoExploreWithReferral(uint256 index_, uint32 level_, uint256 days_, address byWhom_) external {
         uint8 win = _fleetBattleExplore(index_, level_, true);
         if (win == 1) {
-            fleets().fleetAutoExplore(msg.sender, index_, level_, now, now + days_ * 1 days);
+            fleets().fleetAutoExplore(msg.sender, index_, level_, now, now + days_ * (1 days));
         }
+
         referral.setReferral(msg.sender, byWhom_);
     }
 

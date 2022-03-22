@@ -78,9 +78,10 @@ contract Explore is IExplore {
 
         //check end time
         IFleets.Fleet memory fleet = fleets().userFleet(user_, index_);
-        require(now >= fleet.missionEndTime, "Mission undone.");
+        require(now >= fleet.missionEndTime, "Mission not ready.");
+        require(fleet.missionEndTime >= fleet.missionStartTime, "Time messed up");
 
-        uint256 day = (fleet.missionEndTime - fleet.missionStartTime) / 1 days;
+        uint256 day = (fleet.missionEndTime - fleet.missionStartTime) / (1 days);
 
         //burn energy
         ICommodityERC20(registry().tokenEnergy()).transferFrom(user_, address(this), day * 10 * 1e18);
@@ -91,6 +92,7 @@ contract Explore is IExplore {
         for (uint i = 0; i < winResource.length; i++) {
             winResource[i] *= day * 2;
         }
+
         _exploreDrop(user_, winResource);
         emit ExploreResult(1, winResource, fleet.target, "");
     }
