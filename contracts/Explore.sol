@@ -80,14 +80,16 @@ contract Explore is IExplore {
         IFleets.Fleet memory fleet = fleets().userFleet(user_, index_);
         require(now >= fleet.missionEndTime, "Mission undone.");
 
+        uint256 day = (fleet.missionEndTime - fleet.missionStartTime) / 1 days;
+
         //burn energy
-        ICommodityERC20(registry().tokenEnergy()).transferFrom(user_, address(this), fleet.missionStartTime * 10 * 1e18);
-        ICommodityERC20(registry().tokenEnergy()).burn(fleet.missionStartTime * 10 * 1e18);
+        ICommodityERC20(registry().tokenEnergy()).transferFrom(user_, address(this), day * 10 * 1e18);
+        ICommodityERC20(registry().tokenEnergy()).burn(day * 10 * 1e18);
 
         //claim resource
         uint256[] memory winResource = exploreConfig().getRealDropByLevel(fleet.target, fleet.heroIdArray);
         for (uint i = 0; i < winResource.length; i++) {
-            winResource[i] *= fleet.missionStartTime * 2;
+            winResource[i] *= day * 2;
         }
         _exploreDrop(user_, winResource);
         emit ExploreResult(1, winResource, fleet.target, "");
