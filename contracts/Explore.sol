@@ -83,10 +83,6 @@ contract Explore is IExplore {
 
         uint256 day = (fleet.missionEndTime - fleet.missionStartTime) / (1 days);
 
-        //burn energy
-        ICommodityERC20(registry().tokenEnergy()).transferFrom(user_, address(this), day * 10 * 1e18);
-        ICommodityERC20(registry().tokenEnergy()).burn(day * 10 * 1e18);
-
         //claim resource
         uint256[] memory winResource = exploreConfig().getRealDropByLevel(fleet.target, fleet.heroIdArray);
         for (uint i = 0; i < winResource.length; i++) {
