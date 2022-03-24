@@ -272,6 +272,7 @@ contract Fleets is FleetsModel, IFleets, IERC721Receiver {
     }
 
     function goBattleByUserId(uint32 userId_, uint256 fleetIndex_) public {
+        require(false, "false");
         uint32 myUserId = uint32(account().getUserId(msg.sender));
         require(myUserId > 0, "myUserId be positive");
         require(userId_ > 0, "userId be positive");
@@ -283,6 +284,7 @@ contract Fleets is FleetsModel, IFleets, IERC721Receiver {
     }
 
     function quickFly(uint256 index_) public {
+        require(false, "false");
         Fleet storage fleet = userFleetsMap[msg.sender][index_];
         require(fleet.status == 0 || fleet.status == 2 || fleet.status == 3, "Invalid position.");
         (address tokenAddress,uint256 cost) = fleetsConfig().getQuickFlyCost();
