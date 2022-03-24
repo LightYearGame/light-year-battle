@@ -2,7 +2,6 @@
 pragma experimental ABIEncoderV2;
 pragma solidity ^0.6.12;
 
-import "./utils/BytesUtils.sol";
 import "./interface/IBattle.sol";
 import "./interface/IAccount.sol";
 import "./interface/IExplore.sol";
@@ -19,8 +18,6 @@ interface IReferral {
 }
 
 contract Battle is IBattle {
-
-    using BytesUtils for BytesUtils;
 
     address public registryAddress;
     IReferral public referral;
@@ -148,18 +145,18 @@ contract Battle is IBattle {
         //attack health
         for (uint i = 0; i < fleetsConfig().getFleetShipLimit(); i++) {
             if (i < attackerLen) {
-                result = BytesUtils._addBytes(result, attackerShips_[i].health);
+                result = _addBytes(result, attackerShips_[i].health);
             } else {
-                result = BytesUtils._addBytes(result, 0);
+                result = _addBytes(result, 0);
             }
         }
 
         //defender health
         for (uint i = 0; i < fleetsConfig().getFleetShipLimit(); i++) {
             if (i < defenderLen) {
-                result = BytesUtils._addBytes(result, defenderShips_[i].health);
+                result = _addBytes(result, defenderShips_[i].health);
             } else {
-                result = BytesUtils._addBytes(result, 0);
+                result = _addBytes(result, 0);
             }
         }
 
@@ -437,5 +434,13 @@ contract Battle is IBattle {
         bytes1 c_byte = abi.encodePacked(c)[0];
         bytes1 result = a_byte | b_byte | c_byte;
         return result;
+    }
+
+    function _addBytes(bytes memory b, uint32 i) public pure returns (bytes memory){
+        return _mergeBytes(b, abi.encodePacked(i));
+    }
+
+    function _mergeBytes(bytes memory a, bytes memory b) public pure returns (bytes memory c) {
+        return abi.encodePacked(a, b);
     }
 }
