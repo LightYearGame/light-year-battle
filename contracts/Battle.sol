@@ -227,13 +227,21 @@ contract Battle is IBattle {
     function fleetAutoExplore(uint256 index_, uint32 level_, uint256 days_) external {
         uint8 win = _fleetBattleExplore(index_, level_, true);
         if (win == 1) {
-            fleets().fleetAutoExplore(msg.sender, index_, level_, now, now + days_ * (1 days));
+            //burn energy
+            ICommodityERC20(registry().tokenEnergy()).transferFrom(msg.sender, address(this), days_ * 10 * 1e18);
+            ICommodityERC20(registry().tokenEnergy()).burn(days_ * 10 * 1e18);
+
+            fleets().fleetAutoExplore(msg.sender, index_, level_, now, now + days_ * (1 days));        
         }
     }
 
     function fleetAutoExploreWithReferral(uint256 index_, uint32 level_, uint256 days_, address byWhom_) external {
         uint8 win = _fleetBattleExplore(index_, level_, true);
         if (win == 1) {
+            //burn energy
+            ICommodityERC20(registry().tokenEnergy()).transferFrom(msg.sender, address(this), days_ * 10 * 1e18);
+            ICommodityERC20(registry().tokenEnergy()).burn(days_ * 10 * 1e18);
+
             fleets().fleetAutoExplore(msg.sender, index_, level_, now, now + days_ * (1 days));
         }
 

@@ -10,5 +10,6 @@ contracts/test
 package-lock.json
 *.json
 contracts/Registry.sol
+contracts/Referral.sol
 
 *.swp
