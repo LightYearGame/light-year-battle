@@ -283,10 +283,11 @@ contract Fleets is FleetsModel, IFleets, IERC721Receiver {
     }
 
     function quickFly(uint256 index_) public {
+        Fleet storage fleet = userFleetsMap[msg.sender][index_];
+        require(fleet.status == 0 || fleet.status == 2 || fleet.status == 3, "Invalid position.");
         (address tokenAddress,uint256 cost) = fleetsConfig().getQuickFlyCost();
         ICommodityERC20(tokenAddress).transferFrom(msg.sender, address(this), cost);
         ICommodityERC20(tokenAddress).burn(cost);
-        Fleet storage fleet = userFleetsMap[msg.sender][index_];
         fleet.missionEndTime = fleet.missionStartTime;
     }
 
