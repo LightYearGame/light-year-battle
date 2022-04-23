@@ -9,7 +9,7 @@ import "../interface/IShip.sol";
 import "../interface/IShipAttrConfig.sol";
 
 interface ISoftStaking {
-    function balanceMap(address who_) external view returns (uint256);
+    function infoMap(address who_) external view returns (uint256, uint256, uint256);
 }
 
 contract FleetsConfig is IFleetsConfig {
@@ -49,7 +49,7 @@ contract FleetsConfig is IFleetsConfig {
     }
 
     function getUserFleetLimit(address who_) public override view returns (uint256){
-        uint256 balance = softStaking.balanceMap(who_);
+        (uint256 balance,,) = softStaking.infoMap(who_);
         if (balance >= 256000e18) {
             return 20;
         } else if (balance >= 128000e18) {
